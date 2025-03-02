@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎登录</title>
+    <link rel="icon" href="{{ url_for('static',filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="../static/layui/css/layui.css">
+    <link rel="stylesheet" href="../static/static/css/style.css">
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+    <script type="text/javascript" src="../static/bootstrap/jquery.js"></script>
+    <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>
+    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            background-image: url('../static/img/bg2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(173,216,230,0.7) 0%, rgba(255,255,255,0.6) 100%);
+            z-index: -1;
+        }
+
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 5rem;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, #E6E6FA, #F0F8FF, #E6E6FA);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            color: #333;
+            font-size: 3.5rem;
+            margin-bottom: 3rem;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .login-header::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background-color: #A9A9A9;
+            margin: 20px auto 0;
+        }
+
+        .layui-form-item {
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .layui-input {
+            border-radius: 50px;
+            padding: 18px 30px;
+            border: 2px solid #d0d0d0;
+            transition: all 0.3s ease;
+            font-size: 1.3rem;
+        }
+
+        .layui-input:focus {
+            border-color: #A9A9A9;
+            box-shadow: 0 0 15px rgba(169, 169, 169, 0.2);
+        }
+
+        .layui-btn {
+            width: 100%;
+            border-radius: 30px;
+            background-color: #A9A9A9;
+            font-size: 2.5rem;
+            padding: 3px;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+
+        .layui-btn:hover {
+            background-color: #808080;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 2.3rem;
+        }
+
+        .register-link a {
+            color: #696969;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: #4169E1;
+            text-decoration: underline;
+        }
+
+        .floating-bg {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 4rem;
+            }
+
+            .login-header {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-header">脑电信号疲劳监测与评估系统</h2>
+        <form class="layui-form" method="post">
+            {{ form.csrf_token }}
+            <div class="layui-form-item">
+                {{ form.username(class="layui-input", placeholder="用户名", autocomplete="on") }}
+            </div>
+            <div class="layui-form-item">
+                {{ form.password(class="layui-input", placeholder="密码", autocomplete="on") }}
+            </div>
+            <div class="layui-form-item">
+                {{ form.submit(class="layui-btn", value="登录") }}
+            </div>
+        </form>
+        <div class="register-link">
+            <a href="{{ url_for('main.register') }}">还没有账号？立即注册</a>
+        </div>
+    </div>
+
+    <script src="../static/layui/layui.js"></script>
+    <script>
+    layui.use(['layer'], function(){
+        var layer = layui.layer;
+        {% for message in get_flashed_messages() %}
+            layer.msg('{{ message }}');
+        {% endfor %}
+    });
+
+    // 添加浮动背景元素
+    function addFloatingBg(color) {
+        const bg = document.createElement('div');
+        bg.classList.add('floating-bg');
+        bg.style.left = Math.random() * 100 + 'vw';
+        bg.style.top = Math.random() * 100 + 'vh';
+        bg.style.transform = `scale(${Math.random() * 2 + 0.5})`;
+        bg.style.backgroundColor = color;
+        document.body.appendChild(bg);
+
+        let posX = parseFloat(bg.style.left);
+        let posY = parseFloat(bg.style.top);
+        let speedX = (Math.random() * 0.2 - 0.1) * 0.5;
+        let speedY = (Math.random() * 0.2 - 0.1) * 0.5;
+
+        function animateBg() {
+            posX += speedX;
+            posY += speedY;
+
+            if (posX < 0 || posX > 100) speedX *= -1;
+            if (posY < 0 || posY > 100) speedY *= -1;
+
+            bg.style.left = posX + 'vw';
+            bg.style.top = posY + 'vh';
+
+            requestAnimationFrame(animateBg);
+        }
+
+        animateBg();
+    }
+
+    // 创建5个不同颜色的浮动背景元素
+    const colors = ['rgba(224,142,190,0.5)', 'rgba(176,196,222,0.5)', 'rgba(176,224,230,0.5)', 'rgba(173,216,230,0.5)', 'rgba(175,238,238,0.5)'];
+    colors.forEach(color => addFloatingBg(color));
+
+    </script>
+</body>
+</html>
+
+{##}
+{##}
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <title>欢迎登陆</title>#}
+{#    <link rel="icon" href="{{ url_for('static',filename='favicon.ico') }}" type="image/x-icon">#}
+{#    <link rel="stylesheet" href="../static/layui/css/layui.css">#}
+{#    <link rel="stylesheet" href="../static/static/css/style.css">#}
+{#    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">#}
+{#    <script type="text/javascript" src="../static/bootstrap/jquery.js"></script>#}
+{#    <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>#}
+{#    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon">#}
+{#</head>#}
+{#<body style="background-image: url('../static/img/bg2.jpg');background-size: 100%">#}
+{##}
+{#<div class="layui-layout-body" >#}
+{#   <div class="login-main">#}
+{#    <header class="layui-elip">欢迎登录</header>#}
+{#    <form class="layui-form" method="post">#}
+{#        {{ form.csrf_token}}#}
+{#        <div class="layui-input-inline">#}
+{#            {{ form.username(class="layui-input",placeholder="用户名",autocomplete="on") }}#}
+{#        </div>#}
+{#        <div class="layui-input-inline">#}
+{#            {{ form.password(class="layui-input",placeholder="密码",autocomplete="on") }}#}
+{#        </div>#}
+{#        <div class="layui-input-inline login-btn">#}
+{#            {{ form.submit(class="layui-btn") }}#}
+{#        </div>#}
+{#        <hr/>#}
+{#        <p><a href="{{ url_for('main.register') }}" class="fl">立即注册</a></p>#}
+{#    </form>#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<script src="../static/layui/layui.js"></script>#}
+{#<script>#}
+{#layui.use(['layer'], function(){#}
+{#    var layer = layui.layer#}
+{#    {% for message in get_flashed_messages() %}#}
+{#        layer.msg('{{ message }}');#}
+{#    {% endfor %}#}
+{#});#}
+{#</script>#}
+{##}
+{##}
+{#</body>#}
+{#</html>#}

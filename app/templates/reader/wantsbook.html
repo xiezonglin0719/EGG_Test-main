@@ -1,0 +1,54 @@
+{% extends 'reader/base.html' %}
+
+{% block card_header %}
+    <span><a href="/reader/index"> 疲劳评估 / </a></span><span>疲劳数据</span>
+{% endblock %}
+
+{% block card_body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>疲劳诊断结果</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>疲劳诊断结果</h1>
+    <button id="start-diagnosis">开始疲劳诊断</button>
+    <div id="fatigue-result">暂无数据</div>
+
+    <script>
+        // 点击按钮启动疲劳诊断
+        $('#start-diagnosis').on('click', function() {
+            $.ajax({
+                url: '/start_fatigue_prediction',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    alert(response.message);
+                    // 启动定时更新疲劳诊断结果
+                    var intervalId = setInterval(updateFatigueResult, 2000);
+                },
+                error: function() {
+                    alert('启动疲劳诊断出错');
+                }
+            });
+        });
+
+        function updateFatigueResult() {
+            $.ajax({
+                url: '/get_fatigue_prediction',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    $('#fatigue-result').text('当前疲劳诊断结果: ' + data.result);
+                },
+                error: function() {
+                    $('#fatigue-result').text('获取数据出错');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+{% endblock %}
