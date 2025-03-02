@@ -516,8 +516,8 @@ def get_fatigue_prediction():
 
 def simulate_real_time(total_seconds=60, sfreq=1000):
     # 加载模型（请确保 model_path.pkl 为你保存的模型文件路径）
-    model = joblib.load("/Users/bytedance/Downloads/EGG_Test-main 2/app/dataProcess/model/svm_0227.pkl")
-    scaler = joblib.load("/Users/bytedance/Downloads/EGG_Test-main 2/app/dataProcess/model/scaler_0227.pkl")
+    model = joblib.load("//app/dataProcess/model/svm_0227.pkl")
+    scaler = joblib.load("//app/dataProcess/model/scaler_0227.pkl")
 
     """
     模拟实时处理 EEG 数据：

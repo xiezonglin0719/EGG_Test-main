@@ -8,8 +8,8 @@ import sklearn
 print(sklearn.__version__)
 
 # 加载模型（请确保 model_path.pkl 为你保存的模型文件路径）
-model = joblib.load("/Users/bytedance/Downloads/EGG_Test-main 2/app/dataProcess/model/svm_0227.pkl")
-scaler = joblib.load("/Users/bytedance/Downloads/EGG_Test-main 2/app/dataProcess/model/scaler_0227.pkl")
+model = joblib.load("//app/dataProcess/model/svm_0227.pkl")
+scaler = joblib.load("//app/dataProcess/model/scaler_0227.pkl")
 
 # 在 simulate_real_time 函数中更新 latest_prediction 的值
 def simulate_real_time(total_seconds=5, sfreq=1000):
