@@ -1,197 +1,91 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EEG Waveform (10s, Channel 1)</title>
+  <script src="chart.umd.min.js"></script>
+</head>
+<body>
+  <h1>EEG Waveform - Channel 1 (Rolling 10s)</h1>
+  <canvas id="eegChart" width="800" height="400"></canvas>
 
+  <script>
+    // 假设设备 1000Hz，每秒发 1000 个点
+    // 保留 10 秒 => 10 * 1000 = 10000 点
+    const SAMPLES_PER_SECOND = 1000;
+    const SECONDS_TO_DISPLAY = 10;
+    const TOTAL_POINTS = SAMPLES_PER_SECOND * SECONDS_TO_DISPLAY;  // 10000
 
-{% block card_body %}
-<div class="layui-row">
-    <div class="layui-row layui-col-md6">
-        <ul class="layui-row layui-col-space10">
-            <li class="layui-row layui-col-md3">
-                <a href="{{ url_for('main.sysinfo') }}" style="text-align: center">
-                    <div><i class="layui-icon layui-icon-console" style="font-size: 50px"></i></div>
-                    <div><cite>系统管理</cite></div>
-                </a>
-            </li>
-            <li class="layui-row layui-col-md3">
-                <a href="{{ url_for('main.searchbook') }}" style="text-align: center">
-                    <div><i class="layui-icon layui-icon-template-1" style="font-size: 50px"></i></div>
-                    <div><cite>图书管理</cite></div>
-                </a>
-            </li>
-            <li class="layui-row layui-col-md3">
-                <a href="{{ url_for('main.readerinfo') }}" style="text-align: center">
-                    <div><i class="layui-icon layui-icon-user" style="font-size: 50px"></i></div>
-                    <div><cite>读者管理</cite></div>
-                </a>
-            </li>
-            <li class="layui-row layui-col-md3">
-                <a href="{{ url_for('main.borrowbook') }}" style="text-align: center">
-                    <div><i class="layui-icon layui-icon-form" style="font-size: 50px"></i></div>
-                    <div><cite>脑电信号</cite></div>
-                </a>
-            </li>
-        </ul>
-    </div>
+    // 1) X 轴: 0到10秒(共10000个点)
+    // 每个点间隔 0.001 秒 => i * 0.001
+    const xLabels = Array.from({ length: TOTAL_POINTS }, (_, i) => (i / SAMPLES_PER_SECOND).toFixed(3));
 
-    <div class="layui-row layui-col-md4">
-        <ul class="layui-row layui-col-space10">
-            <li class="layui-row layui-col-md5" style="background: #f8f8f8;margin-right: 10px">
-                <a href="{{ url_for('main.borrowbook') }}" style="text-align: center">
-                    <h2 style="margin-bottom: 5px">借书申请</h2>
-                    <div><cite id="borrowreqnum" style="color: #1b6d85;font-size: 25px"></cite></div>
-                </a>
-            </li>
-            <li class="layui-row layui-col-md5" style="background: #f8f8f8;margin-left: 10px">
-                <a href="{{ url_for('main.returnbook') }}" style="text-align: center">
-                    <h2 style="margin-bottom: 5px">还书申请</h2>
-                    <div><cite id="returnreqnum" style="color: #1b6d85;font-size: 25px"></cite></div>
-                </a>
-            </li>
-        </ul>
-    </div>
+    // 2) 准备一个用于存储最近10秒数据的缓冲
+    let channelDataBuffer = Array(TOTAL_POINTS).fill(0);
 
-    <div class="layui-row layui-col-md12" style="margin-top: 30px">
-        <div class="layui-row layui-col-md5" >
-            <div id="line" style="width: 100%;height:360px;"></div>
-            <div style="margin-top: 30px;text-align: center">
-                <p>借阅量/读者变化曲线</p>
-            </div>
-        </div>
-        <div class="layui-row layui-col-md5 layui-col-md-offset1">
-            <div id="pie" style="width: 100%;height:360px;"></div>
-            <div style="margin-top: 30px;text-align: center">
-                <p>库存图书分类占比</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
-
-
-{% block script %}
-
-<script src="../static/layui/layui.js"></script>
-<script>
-layui.use(['layer'], function(){
-    var layer = layui.layer
-    {% for message in get_flashed_messages() %}
-        layer.msg('{{ message }}');
-    {% endfor %}
-});
-</script>
-
-<script src="../static/echart/echarts.min.js"></script>
-<script src="../static/jquery/jquery.min.js"></script>
-
-<script type="text/javascript">
-    var myChart1 = echarts.init(document.getElementById('line'));
-    var option1;
-
-    option1 = {
-        title: {
-            text: ''
-        },
-        tooltip: {
-            trigger: 'axis'
-        },
-        legend: {
-            data: ['借阅图书', '借阅读者']
-        },
-        grid: {
-            left: '10%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
-        toolbox: {
-            feature: {
-                saveAsImage: {}
-            }
-        },
-        xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-        },
-        yAxis: {
-            type: 'value'
-        },
-        series: [{
-            name: '借阅图书',
-            type: 'line',
-            data: [],
-            color: 'DeepSkyBlue'
-        },
-        {
-            name: '借阅读者',
-            type: 'line',
-            data: [],
-            color: 'DarkTurquoise'
-        }]
-    };
-
-    myChart1.setOption(option1);
-
-    $.get('{{ url_for('main.bookstatics_api1') }}').done(function (data) {
-        // 填入数据
-        console.log(data)
-        option1.series[0].data = data.book
-        option1.series[1].data = data.reader
-        myChart1.setOption(option1);
-    });
-</script>
-
-<script type="text/javascript">
-    var myChart2 = echarts.init(document.getElementById('pie'));
-    var option2;
-
-    option2 = {
-        legend: {
-            top: 'bottom'
-        },
-        toolbox: {
-            show: true,
-            feature: {
-                mark: {show: true},
-                dataView: {show: true, readOnly: false},
-                restore: {show: true},
-                saveAsImage: {show: true}
-            }
-        },
-        series: [
-            {
-                name: '',
-                type: 'pie',
-                radius: [50, 140],
-                center: ['50%', '45%'],
-                roseType: 'area',
-                itemStyle: {
-                    borderRadius: 8
-                },
-                data: []
-            }
+    // 3) 创建 Chart.js
+    const ctx = document.getElementById('eegChart').getContext('2d');
+    let eegChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: xLabels,  // 0 ~ 10秒
+        datasets: [
+          {
+            label: 'Channel 1', // 改为展示第二通道
+            data: channelDataBuffer,
+            borderColor: 'blue',
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false
+          }
         ]
-    };
-
-    myChart2.setOption(option2);
-    $.get('{{ url_for('main.bookstatics_api2') }}').done(function (data) {
-        // 填入数据
-        console.log(data.data)
-        myChart2.setOption({
-            series: [{
-                data: data.data
-            }]
-        });
+      },
+      options: {
+        responsive: true,
+        animation: false,
+        scales: {
+          x: {
+            display: true,
+            title: { display: true, text: 'Time (s)' }
+          },
+          y: {
+            display: true,
+            title: { display: true, text: 'Amplitude' }
+          }
+        }
+      }
     });
 
-</script>
+    // 4) 建立 WebSocket 连接
+    const socket = new WebSocket('ws://localhost:8765');
+    socket.onopen = () => {
+      console.log('WebSocket connected');
+    };
 
-<!--- 显示借阅/归还消息数 -->
-<script>
-    $.get('{{ url_for('main.indextips_api') }}', function(data){
-        $("#borrowreqnum").text(data.breq)
-        $("#returnreqnum").text(data.rreq)
-    })
-</script>
+    // 每当收到 1 秒(1000点)数据时，把它追加到缓冲末尾，移除最旧的部分
+    socket.onmessage = (event) => {
+      const received = JSON.parse(event.data);
+      // 使用 received.channels[1] 来获取第二通道
+      if (received.channels && received.channels[1]) {
+        let newData = received.channels[1]; // 第二通道，索引1
 
-{% endblock %}
+        // 拼接
+        channelDataBuffer = channelDataBuffer.concat(newData);
+        // 保持只保留最后 10000 点
+        channelDataBuffer.splice(0, newData.length);
+
+        // 更新 chart 数据
+        eegChart.data.datasets[0].data = channelDataBuffer;
+        eegChart.update();
+      }
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+    socket.onerror = (err) => {
+      console.error('WebSocket error:', err);
+    };
+  </script>
+</body>
+</html>
