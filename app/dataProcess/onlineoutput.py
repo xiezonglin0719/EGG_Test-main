@@ -81,8 +81,8 @@ from app.dataProcess.online_preprocessing import extract_energy_features, prepro
 
 
 # 加载模型（请确保 model_path.pkl 为你保存的模型文件路径）
-model = joblib.load("//app/dataProcess/model/scaler_0227.pkl")
-scaler = joblib.load("//app/dataProcess/model/scaler_0227.pkl")
+model = joblib.load("D:\\PyCharm\\36\\EGG_Test-main_new\\app\\dataProcess\\model\\svm_0227.pkl")
+scaler = joblib.load("D:\\PyCharm\\36\\EGG_Test-main_new\\app\\dataProcess\\model\\scaler_0227.pkl")
 
 # 定义一个全局变量来存储最新的预测结果
 latest_prediction = None
@@ -125,6 +125,22 @@ def real_time_data_stream(sample_rate=1000, t_buffer=1, hostname='192.168.3.25',
                     # 模型推理：对提取的特征进行标准化，并进行预测
                     X = scaler.transform(features)
                     prediction = model.predict(X)
+
+                    # 提取 alpha 频段的数据
+                    alpha_data = features[0, 8 * 59:13 * 59].mean()  # 假设 alpha 频段在第 8 - 13 Hz
+
+                    # 提取 delta 频段的数据（0.5 - 4 Hz）
+                    delta_data = features[0, 0 * 59:4 * 59].mean()  # 假设 delta 频段在第 0.5 - 4 Hz
+
+                    # 提取 theta 频段的数据（4 - 8 Hz）
+                    theta_data = features[0, 4 * 59:8 * 59].mean()  # 假设 theta 频段在第 4 - 8 Hz
+
+                    # 提取 beta 频段的数据（13 - 30 Hz）
+                    beta_data = features[0, 13 * 59:30 * 59].mean()  # 假设 beta 频段在第 13 - 30 Hz
+
+
+
+
                     # X = 1
                     # prediction = 1
                     # 更新最新的预测结果

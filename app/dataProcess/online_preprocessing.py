@@ -23,7 +23,7 @@ def preprocess_eeg(raw_data, sfreq=1000):
     raw = raw.drop_channels([f'EEG{i + 60}' for i in range(6)])
 
     # 3. 滤波（0.1-40Hz带通滤波）
-    raw.filter(0.1, 40, fir_design='firwin')
+    raw.filter(1, 40, method = 'iir')
 
     # 4. 重参考（平均参考）
     raw.set_eeg_reference('average', projection=True)
@@ -51,13 +51,11 @@ def extract_energy_features(preprocessed_raw):
     psd_spectrum = preprocessed_raw.compute_psd(method='welch', picks=None, fmin=0, fmax=30.0)
     psd = psd_spectrum.get_data()  # shape: (59, n_freqs)
     freqs = psd_spectrum.freqs
-    print(freqs)
 
     # δ波：0.5 - 4 Hz
     delta_mask = (freqs >= 0.5) & (freqs < 4.0)
     delta_energy = np.trapz(psd[:, delta_mask], freqs[delta_mask], axis=1)  # shape: (59,)
-    print(delta_mask)
-    print(delta_energy)
+
     # θ波：4 - 8 Hz
     theta_mask = (freqs >= 4.0) & (freqs < 8.0)
     theta_energy = np.trapz(psd[:, theta_mask], freqs[theta_mask], axis=1)  # shape: (59,)
