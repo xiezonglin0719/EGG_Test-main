@@ -2,7 +2,6 @@
 import os
 from socket import SocketIO
 
-from websocket import WebSocket
 
 from app import create_app, db
 from flask_migrate import Migrate
@@ -13,7 +12,7 @@ from app.reader import reader
 app = create_app('default')
 app.register_blueprint(reader)
 migrate = Migrate(app, db)
-# ws = WebSocket(app)
+
 manager = Manager(app)
 
 
@@ -27,5 +26,17 @@ def make_shell_context():
     return dict(db=db, User=User, Book=Book)
 
 
+# if __name__ == '__main__':
+#      app.run()
+#启动onlinedisplay模块
 if __name__ == '__main__':
+    from onlinedisplay import start_onlinedisplay
+    import threading
+
+    # 开启一个线程运行 WebSocket 服务
+    t = threading.Thread(target=start_onlinedisplay)
+    t.start()
+
+    # 运行 Flask 应用
     app.run()
+

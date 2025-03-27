@@ -33,7 +33,7 @@ class Config:
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:Xie010719.@127.0.0.1:3306/ecg?"  # mysql数据库
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@127.0.0.1:3306/eeg?"  # mysql数据库
 
 
 config = {
