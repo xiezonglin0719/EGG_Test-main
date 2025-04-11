@@ -1,0 +1,516 @@
+{% extends 'function/base.html' %}
+{% block card_body %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脑电疲劳监测与评估系统</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: #374151;
+        }
+        .card-content {
+            padding: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- 系统标题和介绍 -->
+        <div class="bg-gray-100 p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <h1 class="text-3xl font-semibold text-gray-800">脑电疲劳监测与评估系统</h1>
+            <p class="text-gray-600 mt-2">实时监测脑电信号并评估您的疲劳状态</p>
+        </div>
+
+        <!-- 1. 疲劳诊断和结果 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- 疲劳诊断控制 -->
+            <div class="card mb-0">
+                <div class="card-header bg-blue-50">
+                    <h2 class="card-title">疲劳诊断</h2>
+                </div>
+                <div class="card-content">
+                    <div class="flex space-x-4">
+                        <button id="start-diagnosis" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out border border-blue-200">
+                            开始疲劳诊断
+                        </button>
+                        <button id="save-diagnosis" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out border border-green-200">
+                            保存诊断数据
+                        </button>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-600">
+                        点击按钮开始进行疲劳诊断。系统将分析您的脑电信号数据，并在几秒钟内给出结果。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 诊断结果 -->
+            <div class="card mb-0">
+                <div class="card-header bg-blue-50">
+                    <h2 class="card-title">诊断结果</h2>
+                </div>
+                <div class="card-content">
+                    <div id="fatigue-result" class="bg-gray-50 p-6 rounded-md text-center text-xl font-medium text-gray-700 min-h-[150px] flex items-center justify-center border border-gray-200">
+                        <span class="text-gray-500">等待诊断...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 疲劳趋势 -->
+        <div class="card">
+            <div class="card-header bg-blue-50">
+                <h2 class="card-title">疲劳趋势</h2>
+            </div>
+            <div class="card-content">
+                <canvas id="fatigueHistoryChart" class="h-[200px]"></canvas>
+            </div>
+        </div>
+
+        <!-- 3. 疲劳程度说明 -->
+        <div class="card">
+            <div class="card-header bg-blue-50">
+                <h2 class="card-title">疲劳程度说明</h2>
+            </div>
+            <div class="card-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-green-50 p-4 rounded-md border border-green-200">
+                        <h3 class="font-medium text-green-700">无疲劳或轻度疲劳</h3>
+                        <p class="text-sm text-green-600 mt-2">您的精神状态良好，可以继续工作或学习。</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-md border border-yellow-200">
+                        <h3 class="font-medium text-yellow-700">中度疲劳</h3>
+                        <p class="text-sm text-yellow-600 mt-2">建议适当休息，避免长时间持续工作。</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-md border border-red-200">
+                        <h3 class="font-medium text-red-700">重度疲劳</h3>
+                        <p class="text-sm text-red-600 mt-2">请立即停止工作或学习，充分休息恢复。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 频率功率分布 -->
+        <div class="card">
+            <div class="card-header bg-blue-50">
+                <h2 class="card-title">频率功率分布</h2>
+            </div>
+            <div class="card-content">
+                <table id="bandRatiosTable">
+                    <tbody>
+                        <tr>
+                            <td class="bg-gray-50">功率峰值</td>
+                            <td class="text-right" id="powerPeak">8.19dB</td>
+                            <td class="bg-gray-50">α/β</td>
+                            <td class="text-right" id="alphaOverBeta">无数据</td>
+                            <td class="bg-gray-50">θ/β</td>
+                            <td class="text-right" id="thetaOverBeta">无数据</td>
+                            <td class="bg-gray-50">(α+θ)/β</td>
+                            <td class="text-right" id="alphaThetaOverBeta">无数据</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-gray-50">(α+θ)/(α+β)</td>
+                            <td class="text-right" id="alphaThetaOverAlphaBeta">无数据</td>
+                            <td class="bg-gray-50">θ/(α+β)</td>
+                            <td class="text-right" id="thetaOverAlphaBeta">无数据</td>
+                            <td class="bg-gray-50">SMR</td>
+                            <td class="text-right" id="smr">8.62dB</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. 脑地形图和实时频谱分析 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 脑地形图 -->
+            <div class="card mb-0">
+                <div class="card-header bg-blue-50">
+                    <h2 class="card-title">脑地形图</h2>
+                </div>
+                <div class="card-content">
+                    <div class="h-[250px] bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500">
+                        脑地形图显示区域
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <button id="startBrainMapBtn" onclick="startBrainMap()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out border border-blue-200">
+                        开始显示脑地形图
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实时频谱分析 -->
+            <div class="card mb-0">
+                <div class="card-header bg-blue-50">
+                    <h2 class="card-title">实时频谱分析</h2>
+                </div>
+                <div class="card-content">
+                    <canvas id="spectrumChart" class="h-[250px]"></canvas>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <button id="startWaveformBtn" onclick="startWaveform()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md transition duration-300 ease-in-out border border-blue-200">
+                        开始展示波形图
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 健康建议 -->
+        <div class="card mt-6">
+            <div class="card-header bg-blue-50">
+                <h2 class="card-title">健康建议</h2>
+            </div>
+            <div class="card-content">
+                <ul class="list-disc list-inside text-gray-600 space-y-2">
+                    <li>保持规律的作息时间，确保充足的睡眠。</li>
+                    <li>工作或学习时，每隔45-60分钟休息5-10分钟。</li>
+                    <li>保持良好的坐姿，避免长时间保持同一姿势。</li>
+                    <li>多喝水，保持身体水分充足。</li>
+                    <li>定时活动，做适量的伸展运动。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化频谱图
+        const ctx = document.getElementById('spectrumChart').getContext('2d');
+        const spectrumChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Alpha 频段',
+                        data: [],
+                        borderColor: 'rgba(255, 99, 132, 0.8)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false,
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Delta 频段',
+                        data: [],
+                        borderColor: 'rgba(54, 162, 235, 0.8)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: false,
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Theta 频段',
+                        data: [],
+                        borderColor: 'rgba(255, 205, 86, 0.8)',
+                        backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                        fill: false,
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Beta 频段',
+                        data: [],
+                        borderColor: 'rgba(75, 192, 192, 0.8)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false,
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '时间'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '数值'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 初始化疲劳历史趋势图
+        const fatigueCtx = document.getElementById('fatigueHistoryChart').getContext('2d');
+        const fatigueHistoryChart = new Chart(fatigueCtx, {
+            type: 'line',
+            data: {
+                labels: ['1天前', '昨天', '今天'],
+                datasets: [{
+                    label: '疲劳指数',
+                    data: [0.2, 0.5, 0.3],
+                    borderColor: 'rgba(75, 192, 192, 0.8)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        title: {
+                            display: true,
+                            text: '疲劳指数'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 开始波形数据获取
+        function startWaveform() {
+            fetch('/start_waveform')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    // 启动接收频谱数据的函数
+                    startReceivingSpectrumData();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // 开始脑地形图数据获取
+        function startBrainMap() {
+            fetch('/start_brain_map')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    // 这里可以添加脑地形图的更新逻辑
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // 每秒接收一次频谱数据
+        function startReceivingSpectrumData() {
+            const intervalId = setInterval(() => {
+                fetch('/send_spectrum_data')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        if ('alphaData' in data && 'deltaData' in data && 'thetaData' in data && 'betaData' in data) {
+                            // 更新频谱图
+                            updateSpectrumChart(data.alphaData, data.deltaData, data.thetaData, data.betaData);
+                        } else {
+                            console.error('Invalid spectrum data received from the server.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error receiving spectrum data:', error);
+                        // 出错时停止间隔请求
+                        clearInterval(intervalId);
+                    });
+            }, 1000);
+        }
+
+        // 更新频谱图数据
+        function updateSpectrumChart(alphaData, deltaData, thetaData, betaData) {
+            const now = new Date().toLocaleTimeString();
+            spectrumChart.data.labels.push(now);
+            spectrumChart.data.datasets[0].data.push(alphaData);
+            spectrumChart.data.datasets[1].data.push(deltaData);
+            spectrumChart.data.datasets[2].data.push(thetaData);
+            spectrumChart.data.datasets[3].data.push(betaData);
+            // 限制数据点数量，避免过多数据导致性能问题
+            if (spectrumChart.data.labels.length > 10) {
+                spectrumChart.data.labels.shift();
+                spectrumChart.data.datasets.forEach(dataset => {
+                    dataset.data.shift();
+                });
+            }
+            spectrumChart.update();
+        }
+
+        // 更新EEG数据
+        function updateEEGData() {
+            fetch("/api/eeg")  // 替换为你的后端API地址
+                .then(response => response.json())
+                .then(data => {
+                    // 更新各个 EEG 频段比值
+                    document.getElementById("alphaOverBeta").innerText = data["alpha/beta"].toFixed(2);
+                    document.getElementById("thetaOverBeta").innerText = data["theta/beta"].toFixed(2);
+                    document.getElementById("alphaThetaOverBeta").innerText = data["(alpha+theta)/beta"].toFixed(2);
+                    document.getElementById("alphaThetaOverAlphaBeta").innerText = data["(alpha+theta)/(alpha+beta)"].toFixed(2);
+                    document.getElementById("thetaOverAlphaBeta").innerText = data["theta/(alpha+beta)"].toFixed(2);
+                    console.log("EEG data updated:", data);
+                })
+                .catch(error => console.error("Error fetching EEG data:", error));
+        }
+
+        // 每秒更新一次EEG数据
+        setInterval(updateEEGData, 1000);
+
+        // 疲劳诊断相关功能
+        $(document).ready(function() {
+            var diagnosisInterval;
+            var diagnosisData = null;
+
+            $('#start-diagnosis').on('click', function() {
+                $(this).prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+                $('#fatigue-result').html('<div class="text-lg text-blue-600">正在评估中，请稍候...</div>');
+
+                $.ajax({
+                    url: '/start_fatigue_prediction',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response.message);
+                        diagnosisInterval = setInterval(updateFatigueResult, 2000);
+                    },
+                    error: function() {
+                        $('#fatigue-result').html('<div class="text-red-500 text-lg">启动疲劳诊断出错</div><button id="retry-btn" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-200">重试</button>');
+                        resetDiagnosisState();
+                    }
+                });
+            });
+
+            // 保存诊断数据
+            $('#save-diagnosis').on('click', function() {
+                if (!diagnosisData) {
+                    alert('暂无诊断数据可保存，请先进行疲劳诊断');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/save_fatigue_data',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(diagnosisData),
+                    dataType: 'json',
+                    success: function(response) {
+                        alert('诊断数据保存成功');
+                        console.log(response.message);
+                    },
+                    error: function() {
+                        alert('诊断数据保存失败');
+                    }
+                });
+            });
+
+            function updateFatigueResult() {
+                $.ajax({
+                    url: '/get_fatigue_prediction',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var result = data.result;
+                        var fatigueDescription, colorClass, bgClass;
+
+                        if (result === 0) {
+                            fatigueDescription = '无疲劳或轻度疲劳';
+                            colorClass = 'text-green-700';
+                            bgClass = 'bg-green-50';
+                        } else if (result === 1) {
+                            fatigueDescription = '中度疲劳';
+                            colorClass = 'text-yellow-700';
+                            bgClass = 'bg-yellow-50';
+                        } else if (result === 2) {
+                            fatigueDescription = '重度疲劳';
+                            colorClass = 'text-red-700';
+                            bgClass = 'bg-red-50';
+                        } else {
+                            fatigueDescription = '未知结果';
+                            colorClass = 'text-gray-700';
+                            bgClass = 'bg-gray-50';
+                        }
+
+                        $('#fatigue-result').removeClass('bg-gray-50 bg-green-50 bg-yellow-50 bg-red-50').addClass(bgClass).html(`
+                            <div>
+                                <div class="${colorClass} text-2xl font-semibold mb-2">当前疲劳诊断结果</div>
+                                <div class="${colorClass} text-3xl font-bold">${fatigueDescription}</div>
+                            </div>
+                        `);
+
+                        // 保存诊断数据以便后续保存
+                        diagnosisData = {
+                            timestamp: new Date().toISOString(),
+                            result: result,
+                            description: fatigueDescription
+                        };
+
+                        // 更新疲劳历史趋势图
+                        updateFatigueHistory(result / 2); // 将结果转换为0-1范围的值
+
+                        resetDiagnosisState();
+                    },
+                    error: function() {
+                        $('#fatigue-result').html('<div class="text-red-500 text-lg">获取数据出错</div><button id="retry-btn" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-200">重试</button>');
+                        resetDiagnosisState();
+                    }
+                });
+            }
+
+            function updateFatigueHistory(value) {
+                // 添加新的数据点到疲劳历史趋势图
+                const now = new Date().toLocaleTimeString();
+                fatigueHistoryChart.data.labels.push(now);
+                fatigueHistoryChart.data.datasets[0].data.push(value);
+
+                // 保持最多显示10个数据点
+                if (fatigueHistoryChart.data.labels.length > 10) {
+                    fatigueHistoryChart.data.labels.shift();
+                    fatigueHistoryChart.data.datasets[0].data.shift();
+                }
+
+                fatigueHistoryChart.update();
+            }
+
+            function resetDiagnosisState() {
+                $('#start-diagnosis').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+            }
+
+            $(document).on('click', '#retry-btn', function() {
+                $('#fatigue-result').html('<div class="text-lg text-blue-600">重新评估中，请稍候...</div>');
+                updateFatigueResult();
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}
+

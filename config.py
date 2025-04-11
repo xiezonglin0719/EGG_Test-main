@@ -23,9 +23,9 @@ class Config:
     FLASKY_COMMENTS_PER_PAGE = 30
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
-    SQLALCHEMY_COMMIT_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    # SQLALCHEMY_COMMIT_TEARDOWN = True
+    # SQLALCHEMY_TRACK_MODIFICATIONS = True
+    # SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     @staticmethod
     def init_app(app):
@@ -33,10 +33,11 @@ class Config:
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@127.0.0.1:3306/eeg?"  # mysql数据库
+    pass
 
 
 config = {
     'default': ProductionConfig
 }
 
+# SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:Xie010719.@127.0.0.1:3306/ecg?"  # mysql数据库

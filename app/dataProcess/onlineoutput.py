@@ -81,8 +81,8 @@ from app.dataProcess.online_preprocessing import extract_energy_features, prepro
 
 
 # 加载模型（请确保 model_path.pkl 为你保存的模型文件路径）
-model = joblib.load("D:\\PyCharm\\36\\EGG_Test-main_new\\app\\dataProcess\\model\\svm_0227.pkl")
-scaler = joblib.load("D:\\PyCharm\\36\\EGG_Test-main_new\\app\\dataProcess\\model\\scaler_0227.pkl")
+model = joblib.load("app/dataProcess/model/scaler_0227.pkl")
+scaler = joblib.load("app/dataProcess/model/svm_0227.pkl")
 
 # 定义一个全局变量来存储最新的预测结果
 latest_prediction = None

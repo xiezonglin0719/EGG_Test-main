@@ -3,32 +3,23 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, RadioField,PasswordField,IntegerField,TextAreaField,FloatField
 from wtforms.validators import DataRequired,Length,Regexp,EqualTo
 from wtforms import ValidationError
-from app.models import User,Book,Library,choices
+
+from app.main.views import read_user_data
+# from app.models import User,Book,Library,choices
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username',validators=[DataRequired()])
-    password = PasswordField('Password',validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
     submit = SubmitField('登录')
-
 
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired(),EqualTo('password2',message='密码不一致.')])
-    password2 = PasswordField('Password', validators=[DataRequired()])
-    name = StringField('Name',validators=[DataRequired()])
-    gender = RadioField('Gender',choices=[('男','男'),('女','女')],default='男')
-    id = StringField('Id',validators=[DataRequired()])
-    depart = StringField('Depart',validators=[DataRequired()])
-    contact = StringField('Contact',validators=[DataRequired()])
-    room = StringField('Room',validators=[DataRequired()])
-    avata = StringField('Avata', validators=[])
     submit = SubmitField('注册')
 
-    def validate_username(self,field):
-        if User.query.filter_by(username=field.data).first():
+    def validate_username(self, field):
+        user_data = read_user_data()
+        if field.data in user_data:
             raise ValidationError('用户名已存在')
-
 
 class AddBookForm(FlaskForm):
     book_id = StringField('Book_id',validators=[DataRequired()])
@@ -36,23 +27,14 @@ class AddBookForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     author = StringField('Author', validators=[DataRequired()])
     press = StringField('Press', validators=[DataRequired()])
-    choices = choices
-    category = SelectField('Category', validators=[DataRequired()],choices=choices,coerce=str,default=0)
+    # choices = choices
+    # category = SelectField('Category', validators=[DataRequired()],choices=choices,coerce=str,default=0)
     location = StringField('Location', validators=[DataRequired()])
     brefintro = TextAreaField('Brefintro', validators=[DataRequired()])
     cover = StringField('Avata', validators=[])
     submit = SubmitField('提交')
 
     flag = 0
-    def validate_isbn(self,field):
-        if Book.query.filter_by(isbn=field.data).first():
-            self.flag = 1
-            raise ValidationError('该ISBN的图书已经存在')
-
-    def validate_book_id(self,field):
-        if Library.query.filter_by(book_id=field.data).first():
-            self.flag = 2
-            raise ValidationError('该图书编号的图书已经存在')
 
 class EditBookForm(FlaskForm):
     isbn = StringField('ISBN', validators=[DataRequired()])
@@ -101,7 +83,7 @@ class WantEditForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     author = StringField('Author', validators=[DataRequired()])
     press = StringField('Press', validators=[DataRequired()])
-    choices = choices
-    category = SelectField('Category', validators=[DataRequired()], choices=choices, coerce=str, default=0)
+    # choices = choices
+    # category = SelectField('Category', validators=[DataRequired()], choices=choices, coerce=str, default=0)
     price = FloatField('Price', validators=[DataRequired()])
     submit = SubmitField('提交')

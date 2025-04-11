@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>脑电信号监测与评估系统</title>
+    <link rel="stylesheet" type="text/css" href="../../static/layui/css/layui.css">
+    <script type="text/javascript" src="../../static/bootstrap/jquery.min.js"></script>
+    <script type="text/javascript" src="../../static/layui/layui.js"></script>
+    <script type="text/javascript" src="../../static/main.js"></script>
+    <link rel="icon" href="../../static/img/favicon.ico" type="image/x-icon">
+    <style>
+        .layui-logo {
+            width: auto !important;
+            padding-right: 15px;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        .logo-image {
+            height: 20px;
+            width: 20px;
+            margin-right: 10px;
+        }
+        .logo-text {
+            color: #e6e6e6;
+            font-size: 25px;
+            line-height: 3;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!-- 页面头部 -->
+    <div class="layui-header" style="background: #134556">
+        <div class="layui-logo layui-layout-left">
+            <a class="layui-logo" href="/reader/index">
+                <div class="logo-container">
+                    <img src="../../static/img/logo.png" class="logo-image" alt="Logo">
+                    <h3 class="logo-text">脑电信号监测与评估系统</h3>
+                </div>
+            </a>
+        </div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="" style="display: inline-block;vertical-align: middle">
+                <a href="#">
+                    <img id="headavata" src="" class="layui-nav-img">
+                </a>
+            </li>
+            <li class="layui-nav-item">
+                <a href="#"><p id="username"></p></a>
+                <dl class="layui-nav-child">
+                    <a href="{{ url_for('function.user') }}">个人信息</a>
+{#                    <a href="{{ url_for('function.userpasswd') }}">修改密码</a>#}
+                </dl>
+            </li>
+            <li class="layui-nav-item">
+                <a href="{{ url_for('main.logout') }}">退出</a>
+            </li>
+        </ul>
+    </div>
+    <!-- 侧边导航栏 -->
+    <div class="layui-side">
+        <div class="layui-side-scroll" style="background: #333">
+            <ul class="layui-nav layui-nav-tree" style="background: #333">
+
+                <!-- 脑电信号模块拆分 -->
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('function.index') }}">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-form"></i>&nbsp实时显示</a>
+                </li>
+                <!-- 疲劳评估模块 -->
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('function.wantsbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-form"></i>&nbsp疲劳评估</a>
+                </li>
+
+                 <!-- 账户管理 -->
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('function.user') }}">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-form"></i>&nbsp个人信息管理</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="layui-body">
+        <div class="layui-row">
+            <div class="layui-card-header">
+                <h2>{% block card_header %}{% endblock %}</h2>
+            </div>
+            <div class="layui-fluid">
+                <div class="layui-card-body">
+                    {% block card_body %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 页面底部 -->
+    <div class="layui-footer">
+        <p>Copyright 2025 脑电信号监测与评估系统</p>
+    </div>
+</div>
+
+<script src="../../static/layui/layui.js"></script>
+<script src="../../static/jquery/jquery.min.js"></script>
+<script>
+    layui.use('element',function (){
+        var element = layui.element
+        element.init()
+    })
+</script>
+
+<!-- 标题栏显示当前登录的用户名 -->
+<script>
+    $.post('{{ url_for('main.username_api') }}',function (data){
+        $("#username").text(data.username)
+        username = data.username;
+        $.post('{{ url_for('main.get_avata_url_api') }}',{username:username},function (str){
+            avata_url = str.url;
+            console.log(avata_url)
+            if(avata_url == 'lost')
+            {
+                avata_url = "../../static/img/avata/defaultavata.jpg"
+                $("#headavata").attr("src",avata_url)
+            }
+            else
+                $("#headavata").attr("src",avata_url)
+        })
+    })
+</script>
+
+{% block script %}
+{% endblock %}
+
+{% block outest %}
+{% endblock %}
+
+</body>
+</html>
