@@ -1,7 +1,5 @@
 import mne
 import numpy as np
-import time
-import joblib
 
 
 def preprocess_eeg(raw_data, sfreq=1000):
@@ -18,7 +16,8 @@ def preprocess_eeg(raw_data, sfreq=1000):
     # 1. 利用 mne.create_info 创建信息并构造raw对象
     info = mne.create_info(ch_names=[f'EEG{i + 1}' for i in range(65)], ch_types='eeg', sfreq=sfreq)
     raw = mne.io.RawArray(raw_data, info)
-
+    # info = 1
+    # raw = 1
     # 2. 去除后6导联（保留59个有效电极）
     raw = raw.drop_channels([f'EEG{i + 60}' for i in range(6)])
 

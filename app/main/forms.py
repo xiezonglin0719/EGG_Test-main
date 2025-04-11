@@ -1,34 +1,47 @@
 # -*— coding:utf-8 -*—
+import json
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, RadioField,PasswordField,IntegerField,TextAreaField
 from wtforms.validators import DataRequired,Length,Regexp,EqualTo
 from wtforms import ValidationError
-from app.models import User,Book,Library,choices
+
+#
+# from app.models import User,Book,Library,choices
+
+# 假设 user_data.json 文件存储在项目根目录下
+USER_DATA_FILE = 'user_data.json'
+
+# 读取本地用户信息
+def read_user_data():
+    try:
+        with open(USER_DATA_FILE, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+
+# 写入本地用户信息
+def write_user_data(user_data):
+    with open('user_data.json', 'w') as f:
+        json.dump(user_data, f, indent=4)
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username',validators=[DataRequired()])
-    password = PasswordField('Password',validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
     submit = SubmitField('登录')
 
-
 class RegisterForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired(),EqualTo('password2',message='密码不一致.')])
-    password2 = PasswordField('Password', validators=[DataRequired()])
-    name = StringField('Name',validators=[DataRequired()])
-    gender = SelectField('Gender',choices=[('1','男'),('2','女')],default='1',coerce=str)
-    id = StringField('Id',validators=[DataRequired()])
-    # depart = StringField('Depart',validators=[DataRequired()])
-    contact = StringField('Contact',validators=[DataRequired()])
-    # room = StringField('Room',validators=[DataRequired()])
-    avata = StringField('Avata',validators=[])
+    username = StringField('用户名', validators=[DataRequired()])
+    # gender_choices = [('male', '男'), ('female', '女')]
+    # gender = SelectField('性别', choices=gender_choices, validators=[DataRequired()])
     submit = SubmitField('注册')
 
-    def validate_username(self,field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError('用户名已存在')
 
+def validate_username(self, field):
+        user_data = read_user_data()
+        if field.data in user_data:
+            raise ValidationError('用户名已存在')
 
 class AddBookForm(FlaskForm):
     book_id = StringField('Book_id',validators=[DataRequired()])
@@ -36,23 +49,23 @@ class AddBookForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     author = StringField('Author', validators=[DataRequired()])
     press = StringField('Press', validators=[DataRequired()])
-    choices = choices
-    category = SelectField('Category', validators=[DataRequired()],choices=choices,coerce=str,default=0)
+    # choices = choices
+    # category = SelectField('Category', validators=[DataRequired()],choices=choices,coerce=str,default=0)
     location = StringField('Location', validators=[DataRequired()])
     brefintro = TextAreaField('Brefintro', validators=[DataRequired()])
     cover = StringField('Avata', validators=[])
     submit = SubmitField('新书入库')
 
     flag = 0
-    def validate_isbn(self,field):
-        if Book.query.filter_by(isbn=field.data).first():
-            self.flag = 1
-            raise ValidationError('该ISBN的图书已经存在')
-
-    def validate_book_id(self,field):
-        if Library.query.filter_by(book_id=field.data).first():
-            self.flag = 2
-            raise ValidationError('该图书编号的图书已经存在')
+    # def validate_isbn(self,field):
+    #     if Book.query.filter_by(isbn=field.data).first():
+    #         self.flag = 1
+    #         raise ValidationError('该ISBN的图书已经存在')
+    #
+    # def validate_book_id(self,field):
+    #     if Library.query.filter_by(book_id=field.data).first():
+    #         self.flag = 2
+    #         raise ValidationError('该图书编号的图书已经存在')
 
 class EditBookForm(FlaskForm):
     isbn = StringField('ISBN', validators=[DataRequired()])

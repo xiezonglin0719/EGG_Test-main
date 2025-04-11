@@ -1,4 +1,4 @@
-import mne
+# import mne
 import numpy as np
 import time
 from neuracle_api import DataServerThread
